@@ -5,16 +5,14 @@
 	http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 	id="WebApp_ID" version="2.5">
 	
-	<listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-    </listener>
-
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>
-            classpath*:spring/application-config.xml
-        </param-value>
+        <param-value>classpath*:spring/support-public-config.xml</param-value>
     </context-param>
+    
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
     
      <filter>
         <filter-name>CharacterEncodingFilter</filter-name>

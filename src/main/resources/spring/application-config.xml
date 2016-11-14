@@ -11,5 +11,5 @@
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<import resource="classpath*:spring/support-config-public.xml"/>
+	<import resource="classpath*:support-public-config.xml"/>
 </beans>
