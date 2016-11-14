@@ -6,12 +6,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lachesis.support.auth.api.common.AuthBizErrorCodes;
 import com.lachesis.support.auth.api.exception.AuthenticationException;
 import com.lachesis.support.auth.api.vo.AuthResponse;
+import com.lachesis.support.auth.api.vo.TokenRequest;
 import com.lachesis.support.auth.api.vo.TokenResponse;
 import com.lachesis.support.auth.api.vo.UserDetailsResponse;
 import com.lachesis.support.auth.service.CentralizedAuthSupporter;
@@ -26,18 +28,18 @@ public class AuthCenterController {
 	private CentralizedAuthSupporter authSupporter;
 	
 	@RequestMapping("token")
-	public AuthResponse requestToken(String username, String password, HttpServletRequest request){
+	public AuthResponse requestToken(@RequestBody TokenRequest tokenRequest, HttpServletRequest request){
 		if(LOG.isInfoEnabled()){
-			LOG.info(String.format("request token for [username:%s]", username));
+			LOG.info(String.format("request token for [username:%s]", tokenRequest.getUsername()));
 		}
 		
-		if(isBlank(username) || isBlank(password)){
-			LOG.error(String.format("errors with [username:%s]", username));
+		if(isBlank(tokenRequest.getUsername()) || isBlank(tokenRequest.getPassword())){
+			LOG.error(String.format("errors with [username:%s]", tokenRequest.getUsername()));
 			throw new AuthenticationException(AuthBizErrorCodes.AUTH_FAILED_ARGS, "用户名或密码为空");
 		}
 		
-		String userid = username;
-		String psword = password;
+		String userid = tokenRequest.getUsername();
+		String psword = tokenRequest.getPassword();
 		String ip = determineTerminalIpAddress(request);
 		
 		String token = authSupporter.generateToken(userid, psword, ip);
