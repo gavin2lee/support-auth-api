@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,7 +29,7 @@ public class AuthCenterController {
 	@Autowired
 	private CentralizedAuthSupporter authSupporter;
 
-	@RequestMapping("token")
+	@RequestMapping(value="token",produces={MediaType.APPLICATION_JSON_VALUE})
 	public AuthResponse requestToken(@RequestBody TokenRequest tokenRequest, HttpServletRequest request) {
 		if (LOG.isInfoEnabled()) {
 			LOG.info(String.format("request token for [username:%s]", tokenRequest.getUsername()));
@@ -63,7 +64,7 @@ public class AuthCenterController {
 		return tokenResp;
 	}
 
-	@RequestMapping("auth")
+	@RequestMapping(value="auth",produces={MediaType.APPLICATION_JSON_VALUE})
 	public AuthResponse verifyToken(@RequestParam("token") String token, @RequestParam("ip") String ip) {
 		if (LOG.isInfoEnabled()) {
 			LOG.info(String.format("authentication for [token:%s,ip:%s]", token, ip));
