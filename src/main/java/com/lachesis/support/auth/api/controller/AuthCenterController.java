@@ -30,7 +30,7 @@ public class AuthCenterController {
 	private CentralizedAuthSupporter authSupporter;
 
 	@RequestMapping(value="token",produces={MediaType.APPLICATION_JSON_VALUE})
-	public AuthResponse requestToken(@RequestBody TokenRequest tokenRequest, HttpServletRequest request) {
+	public AuthResponse authenticate(@RequestBody TokenRequest tokenRequest, HttpServletRequest request) {
 		if (LOG.isInfoEnabled()) {
 			LOG.info(String.format("request token for [username:%s]", tokenRequest.getUsername()));
 		}
@@ -44,19 +44,19 @@ public class AuthCenterController {
 		String psword = tokenRequest.getPassword();
 		String ip = determineTerminalIpAddress(request);
 
-		String token = authSupporter.generateToken(userid, psword, ip);
+		String token = authSupporter.authenticate(userid, psword, ip);
 		if (isBlank(token)) {
 			LOG.error(String.format("authenticating failed for [userid:%s, ip:%s]", userid, ip));
 			throw new AuthenticationException(AuthBizErrorCodes.AUTH_FAILED, "认证错误");
 		}
 
-		UserDetails userDetails = authSupporter.authenticate(token, ip);
+		UserDetails userDetails = authSupporter.authorize(token, ip);
 		if (userDetails == null) {
 			LOG.error("cannot get userdetails with token:" + token);
 			throw new AuthenticationException(AuthBizErrorCodes.AUTH_FAILED, "认证失败");
 		}
 
-		String resourceId = userDetails.getResourceId();
+		String resourceId = userDetails.getId();
 
 		TokenResponse tokenResp = new TokenResponse();
 		tokenResp.setToken(token);
@@ -65,7 +65,7 @@ public class AuthCenterController {
 	}
 
 	@RequestMapping(value="auth",produces={MediaType.APPLICATION_JSON_VALUE})
-	public AuthResponse verifyToken(@RequestParam("token") String token, @RequestParam("ip") String ip) {
+	public AuthResponse authorize(@RequestParam("token") String token, @RequestParam("ip") String ip) {
 		if (LOG.isInfoEnabled()) {
 			LOG.info(String.format("authentication for [token:%s,ip:%s]", token, ip));
 		}
@@ -75,16 +75,21 @@ public class AuthCenterController {
 			throw new AuthenticationException(AuthBizErrorCodes.AUTH_FAILED_ARGS, "token或IP为空");
 		}
 
-		UserDetails userDetails = authSupporter.authenticate(token, ip);
+		UserDetails userDetails = authSupporter.authorize(token, ip);
 		if (userDetails == null) {
 			LOG.error(String.format("authentication failed with [token:%s, ip:%s]", token, ip));
 			throw new AuthenticationException(AuthBizErrorCodes.AUTH_FAILED_TOKEN, "无效token");
 		}
 
 		UserDetailsResponse resp = new UserDetailsResponse();
-		resp.setUserId(userDetails.getResourceId());
+		resp.setUserId(userDetails.getId());
 		resp.setUsername(userDetails.getUserid());
 		return resp;
+	}
+	
+	public AuthResponse logout(String token, String ip){
+		//TODO
+		return null;
 	}
 
 	private String determineTerminalIpAddress(HttpServletRequest request) {
