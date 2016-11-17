@@ -9,16 +9,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lachesis.support.auth.api.common.AuthBizErrorCodes;
 import com.lachesis.support.auth.api.exception.AuthenticationException;
 import com.lachesis.support.auth.api.vo.AuthResponse;
-import com.lachesis.support.auth.api.vo.TokenRequest;
-import com.lachesis.support.auth.api.vo.TokenResponse;
-import com.lachesis.support.auth.api.vo.UserDetailsResponse;
+import com.lachesis.support.auth.api.vo.AuthenticationRequest;
+import com.lachesis.support.auth.api.vo.AuthenticationResponse;
+import com.lachesis.support.auth.api.vo.AuthorizationResponse;
 import com.lachesis.support.auth.service.CentralizedAuthSupporter;
+import com.lachesis.support.auth.vo.AuthorizationResult;
 import com.lachesis.support.auth.vo.UserDetails;
 
 @RestController
@@ -29,8 +31,8 @@ public class AuthCenterController {
 	@Autowired
 	private CentralizedAuthSupporter authSupporter;
 
-	@RequestMapping(value="token",produces={MediaType.APPLICATION_JSON_VALUE})
-	public AuthResponse authenticate(@RequestBody TokenRequest tokenRequest, HttpServletRequest request) {
+	@RequestMapping(value="token",produces={MediaType.APPLICATION_JSON_VALUE},method=RequestMethod.POST)
+	public AuthResponse authenticate(@RequestBody AuthenticationRequest tokenRequest, HttpServletRequest request) {
 		if (LOG.isInfoEnabled()) {
 			LOG.info(String.format("request token for [username:%s]", tokenRequest.getUsername()));
 		}
@@ -58,13 +60,13 @@ public class AuthCenterController {
 
 		String resourceId = userDetails.getId();
 
-		TokenResponse tokenResp = new TokenResponse();
+		AuthenticationResponse tokenResp = new AuthenticationResponse();
 		tokenResp.setToken(token);
 		tokenResp.setUserId(resourceId);
 		return tokenResp;
 	}
 
-	@RequestMapping(value="auth",produces={MediaType.APPLICATION_JSON_VALUE})
+	@RequestMapping(value="token",produces={MediaType.APPLICATION_JSON_VALUE},method=RequestMethod.GET)
 	public AuthResponse authorize(@RequestParam("token") String token, @RequestParam("ip") String ip) {
 		if (LOG.isInfoEnabled()) {
 			LOG.info(String.format("authentication for [token:%s,ip:%s]", token, ip));
@@ -75,21 +77,21 @@ public class AuthCenterController {
 			throw new AuthenticationException(AuthBizErrorCodes.AUTH_FAILED_ARGS, "token或IP为空");
 		}
 
-		UserDetails userDetails = authSupporter.authorize(token, ip);
-		if (userDetails == null) {
+		AuthorizationResult authResult = authSupporter.authorize(token, ip);
+		if (authResult == null) {
 			LOG.error(String.format("authentication failed with [token:%s, ip:%s]", token, ip));
 			throw new AuthenticationException(AuthBizErrorCodes.AUTH_FAILED_TOKEN, "无效token");
 		}
 
-		UserDetailsResponse resp = new UserDetailsResponse();
-		resp.setUserId(userDetails.getId());
-		resp.setUsername(userDetails.getUserid());
+		AuthorizationResponse resp = new AuthorizationResponse();
+		resp.setId(authResult.getId());
+		resp.setUsername(authResult.getUserid());
 		return resp;
 	}
 	
-	public AuthResponse logout(String token, String ip){
-		//TODO
-		return null;
+	@RequestMapping(value="token",produces={MediaType.APPLICATION_JSON_VALUE},method=RequestMethod.DELETE)
+	public void logout(@RequestParam("token")String token, HttpServletRequest request){
+		authSupporter.logout(token);
 	}
 
 	private String determineTerminalIpAddress(HttpServletRequest request) {

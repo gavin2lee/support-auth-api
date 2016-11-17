@@ -1,6 +1,6 @@
 package com.lachesis.support.auth.api.vo;
 
-public class TokenResponse implements AuthResponse{
+public class AuthenticationResponse implements AuthResponse{
 	private String token;
 	private String userId;
 

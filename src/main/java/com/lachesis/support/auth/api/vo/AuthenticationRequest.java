@@ -1,6 +1,6 @@
 package com.lachesis.support.auth.api.vo;
 
-public class TokenRequest implements AuthRequest {
+public class AuthenticationRequest implements AuthRequest {
 	private String username;
 	private String password;
 
