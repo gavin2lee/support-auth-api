@@ -100,7 +100,7 @@
 				<configuration>
 					<uriEncoding>UTF-8</uriEncoding>
 					<port>9090</port>
-                    <path>/authcenter/v1</path>
+                    <path>/authcenter/api/v1</path>
 				</configuration>
 			</plugin>
 		</plugins>
