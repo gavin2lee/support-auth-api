@@ -1,4 +1,4 @@
-package com.lachesis.support.auth.api.exception;
+package com.lachesis.support.auth.api.handler;
 
 import java.io.PrintWriter;
 
@@ -7,6 +7,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.AbstractHandlerExceptionResolver;
+
+import com.lachesis.support.auth.api.exception.AuthenticationException;
 
 public class LocalResponseStatusExceptionResolver extends AbstractHandlerExceptionResolver {
 
